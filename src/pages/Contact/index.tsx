@@ -1,22 +1,43 @@
 import React from 'react';
-import { Button, TextStyle, View } from 'react-native';
+import { Alert, Button, Text, TextStyle, View } from 'react-native';
 import PickerSelect from 'react-native-picker-select';
 
+import contactRepository from '../../repositories/contact.repository';
 import timeZonedbService from '../../services/timezonedb';
 import InputTextField from '../../components/InputTextField';
 import { Contact } from '../../models/contact';
+import { TimeZone } from '../../models/timezone'
 
 export default function ContactPage() {
 
     const [ name, setName ] = React.useState<string>();
     const [ phone, setPhone ] = React.useState<string>();
-    const [ timeZone, setTimeZone ] = React.useState<string>();
+    const [ timeZone, setTimeZone ] = React.useState<TimeZone>();
+    const [ distinctTimeZones, setTimeZones ] = React.useState<TimeZone[]>();
+
 
     timeZonedbService.get('').then(({ data }: any) => {
-        console.log(data.zones);
+        const zones: TimeZone[] = data.zones;
+
+        const initial = new Map<Number, TimeZone>();
+
+        // Abaixo, pegamos apenas os timezones distintos, dentre todos os timezones existentes, filtrando pelo
+        // atributo 'gmtOffset'
+        const map = zones.reduce((map, zone) => {
+            map.set(zone.gmtOffset, zone);
+            return map;
+        }, initial);
+
+        // Agora, do map filtrado anteriormente, geramos uma lista apenas com objetos do tipo TimeZone
+        const list = Array.from(map.values());
+
+        // Agora, ordenamos os timezones distintos, utilizando o atributo 'gmtOffset', do menor para o maior
+        list.sort((a, b) => a.gmtOffset - b.gmtOffset);
+
+        setTimeZones(list);
     });
 
-    function handleSave() {
+    async function handleSave() {
 
         if (name === undefined || name.trim() === '') {
             alert('Nome é obrigatório');
@@ -28,7 +49,7 @@ export default function ContactPage() {
             return;
         }
 
-        if (timeZone === undefined || timeZone.trim() === '') {
+        if (timeZone === undefined) {
             alert('Fuso Horário é obrigatório!');
             return;
         }
@@ -39,8 +60,41 @@ export default function ContactPage() {
             timeZone
         };
 
-        console.log(contact);
+        const saved = await contactRepository.save(contact);
+
+        if (saved) {
+            Alert.alert('Salvo com sucesso');
+        } else {
+            Alert.alert('Nao foi possivel salvar, veriricar os dados');
+
+        }
     }
+
+    function formatGmt(gmtOffset: number) {
+        let gmt = (gmtOffset / 3600).toFixed(2);
+        if (!gmt.startsWith('-')) {
+            gmt = `+${gmt}`;
+        }
+
+        const signal = gmt.substring(0, 1);
+        let value = gmt.substring(1);
+        if (value.length === 4) {
+            value = `0${value}`;
+        }
+
+        const hour = value.split('.')[0];
+        let minute = value.split('.')[1];
+        minute = (60 * Number(`0.${minute}`)).toFixed(0);
+        if (minute.length === 1) {
+            minute = "0" + minute;
+        } 
+
+        return `GMT ${signal}${hour}:${minute}`;
+    }
+
+    if (!distinctTimeZones) {
+        return <Text>Não foi possível obter a lista de Timezones</Text>
+    } 
 
     return (
         <View>
@@ -48,6 +102,7 @@ export default function ContactPage() {
            
             <InputTextField label='Telefone' onChange={setPhone} />
 
+            <Text>Fuso Horário</Text>
             <PickerSelect 
                 style={{ 
                     viewContainer: { marginBottom: 20, }, 
@@ -56,13 +111,16 @@ export default function ContactPage() {
                     inputWeb: bothStyle 
                 }}
                 placeholder={{ label: "Fuso Horário" }}
-                items={[
-                    { label: '-03:00', value: -3 },
-                    { label: '00:00', value: 0 },
-                    { label: '+06:00', value: 6 },
-                ]}
+                value={timeZone ? timeZone.gmtOffset: null}
+                items={
+                    distinctTimeZones.map(zone => ({ 
+                            key: zone.gmtOffset,
+                            label: formatGmt(zone.gmtOffset),
+                            value: zone.gmtOffset
+                        }))
+                }
                 onValueChange={
-                    (value: any) => value && setTimezone(value.toString())
+                    value => setTimeZone(distinctTimeZones.find(tz => tz.gmtOffset === value))
                 }
             />
         

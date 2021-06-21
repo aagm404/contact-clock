@@ -28,7 +28,7 @@ class ContactRepository {
         try {
             this.store(list);
             return true;
-        } catch(error) {
+        } catch (error) {
             console.error('Erro ao salvar: ', error);
             return false;
         }
@@ -42,8 +42,7 @@ class ContactRepository {
     }
 
     private async store(list: Contact[]) {
-        const jsonValue = JSON.stringify(list);
-        await this.repository.setItem(this.document, jsonValue);
+        await this.repository.setItem(this.document, JSON.stringify(list));
     }
 }
 

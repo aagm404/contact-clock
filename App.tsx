@@ -1,24 +1,9 @@
 import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
 
-import HomePage from './src/pages/Home';
-import ContactPage from './src/pages/Contact';
+import Routes from './src/Routes';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-      <HomePage />
-    </View>
+    <Routes />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
-});

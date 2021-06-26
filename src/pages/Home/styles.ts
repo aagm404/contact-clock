@@ -8,8 +8,18 @@ export default StyleSheet.create({
         padding: 10,
     },
 
-    addButton: {
-        marginRight: 10,
+    title: {
+        fontSize: 22,
+        marginBottom: 5,
+    },
+
+    subtitle: {
+        fontSize: 16,
+        marginBottom: 10,
+    },
+
+    titleButton: {
+        marginHorizontal: 10,
     },
 
     list: {

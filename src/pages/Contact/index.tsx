@@ -4,8 +4,8 @@ import { Alert, Button, Text, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import InputTextField from '../../components/InputTextField';
-import { TimeZone } from '../../models/timezone'
-import { fetchTimeZones, formatTimeZoneList, save } from './actions';
+import { Timezone } from '../../models/timezone'
+import { fetchTimezones, formatTimezoneList, save } from './actions';
 
 import styles from './styles';
 
@@ -16,18 +16,18 @@ export default function ContactPage() {
 
     const [ name, setName ] = React.useState<string>();
     const [ phone, setPhone ] = React.useState<string>();
-    const [ timeZone, setTimeZone ] = React.useState<TimeZone>();
-    const [ distinctTimeZones, setTimeZones ] = React.useState<TimeZone[]>();
+    const [ timezone, setTimezone ] = React.useState<Timezone>();
+    const [ distinctTimezones, setTimezones ] = React.useState<Timezone[]>();
 
     React.useEffect(() => {
 
-        fetchTimeZones().then(list => setTimeZones(list));
+        fetchTimezones().then(list => setTimezones(list));
         
         if (route.params) {
             const { contact } = route.params as any;
             setName(contact.name);
             setPhone(contact.phone);
-            setTimeZone(contact.timeZone);
+            setTimezone(contact.timezone);
         } else {
             navigation.setOptions({
                 title: 'Novo Contato'
@@ -38,14 +38,14 @@ export default function ContactPage() {
 
     async function handleSave() {
         try {
-            save(name, phone, timeZone);
+            save(name, phone, timezone);
             navigation.goBack();
         } catch (error) {
             Alert.alert('Não foi possível salvar, verificar os dados!');
         }
     }
 
-    if (!distinctTimeZones) {
+    if (!distinctTimezones) {
         return <Text>Carregando...</Text>
     } 
 
@@ -64,10 +64,10 @@ export default function ContactPage() {
                     inputWeb: styles.bothStyle 
                 }}
                 placeholder={{ label: "Fuso Horário" }}
-                value={timeZone ? timeZone.gmtOffset: null}
-                items={formatTimeZoneList(distinctTimeZones)                }
+                value={timezone ? timezone.gmtOffset: null}
+                items={formatTimezoneList(distinctTimezones)                }
                 onValueChange={
-                    value => setTimeZone(distinctTimeZones.find(tz => tz.gmtOffset === value))
+                    value => setTimezone(distinctTimezones.find(tz => tz.gmtOffset === value))
                 }
             />
         

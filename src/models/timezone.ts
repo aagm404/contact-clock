@@ -1,4 +1,4 @@
-export interface TimeZone {
+export interface Timezone {
     countryCode: string;
     countryName: string;
     zoneName: string;

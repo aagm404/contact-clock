@@ -1,7 +1,7 @@
-import { TimeZone } from './timeZone';
+import { Timezone } from './timezone';
 
 export interface Contact {
     name: string;
     phone: string;
-    timeZone: TimeZone;
+    timezone: Timezone;
 }
